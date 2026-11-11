@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Hub - ระบบอาสาสมัครกิจกรรมเพื่อชุมชน</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#f0fdf4',
+                100: '#dcfce7',
+                200: '#bbf7d0',
+                500: '#22c55e',
+                600: '#16a34a',
+                700: '#15803d',
+                800: '#166534',
+              }
+            },
+            fontFamily: {
+              sans: ['Prompt', 'Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Prompt -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* Custom Smooth Transitions */
+      .tab-content { display: none; }
+      .tab-content.active { display: block; }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+      }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Sign-in screen -->
+    <section id="authScreen" class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-slate-100 px-4 py-8 sm:px-6">
+        <div class="mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center justify-center">
+            <div class="grid w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5 lg:grid-cols-2">
+                <div class="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-800 via-brand-700 to-emerald-500 p-10 text-white lg:flex">
+                    <div class="absolute -bottom-16 -right-10 text-white/10">
+                        <i class="fa-solid fa-hands-holding-child text-[300px]"></i>
+                    </div>
+                    <div class="relative flex items-center gap-3">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl">
+                            <i class="fa-solid fa-hand-holding-heart"></i>
+                        </div>
+                        <div>
+                            <p class="text-xl font-bold">Volunteer<span class="text-emerald-200">Hub</span></p>
+                            <p class="text-xs text-emerald-100">ระบบจิตอาสาเพื่อชุมชน</p>
+                        </div>
+                    </div>
+                    <div class="relative max-w-md py-12">
+                        <span class="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs">
+                            <i class="fa-solid fa-seedling"></i> ทุกการลงมือทำมีความหมาย
+                        </span>
+                        <h1 class="mb-4 text-4xl font-bold leading-tight">เริ่มต้นทำสิ่งดี ๆ ให้ชุมชนไปด้วยกัน</h1>
+                        <p class="leading-relaxed text-emerald-50">ค้นหากิจกรรมอาสาที่ใช่ บันทึกชั่วโมง และติดตามทุกความตั้งใจของคุณได้ในที่เดียว</p>
+                    </div>
+                    <p class="relative text-xs text-emerald-100">Volunteer Hub Thailand · พลังเล็ก ๆ ที่เปลี่ยนสังคมได้</p>
+                </div>
+
+                <div class="flex items-center justify-center p-6 sm:p-10 lg:p-12">
+                    <div class="w-full max-w-md">
+                        <div class="mb-8 flex items-center gap-3 lg:hidden">
+                            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-xl text-white">
+                                <i class="fa-solid fa-hand-holding-heart"></i>
+                            </div>
+                            <div>
+                                <p class="text-lg font-bold text-slate-900">Volunteer<span class="text-brand-600">Hub</span></p>
+                                <p class="text-xs text-slate-500">ระบบจิตอาสาเพื่อชุมชน</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <p id="authEyebrow" class="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-700">ยินดีต้อนรับกลับ</p>
+                            <h2 id="authTitle" class="text-2xl font-bold text-slate-900 sm:text-3xl">เข้าสู่ระบบ</h2>
+                            <p id="authSubtitle" class="mt-2 text-sm text-slate-500">เข้าสู่ระบบเพื่อค้นหาและเข้าร่วมกิจกรรมอาสา</p>
+                        </div>
+
+                        <form id="gateLoginForm" onsubmit="handleGateAuth(event, 'login')" class="space-y-4">
+                            <div>
+                                <label for="gateLoginEmail" class="mb-1.5 block text-sm font-medium text-slate-700">อีเมล</label>
+                                <input id="gateLoginEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10">
+                            </div>
+                            <div>
+                                <label for="gateLoginPassword" class="mb-1.5 block text-sm font-medium text-slate-700">รหัสผ่าน</label>
+                                <input id="gateLoginPassword" name="password" type="password" autocomplete="current-password" required placeholder="กรอกรหัสผ่าน" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10">
+                            </div>
+                            <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-600/20 transition hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-500/20">
+                                เข้าสู่ระบบ <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </form>
+
+                        <form id="gateRegisterForm" onsubmit="handleGateAuth(event, 'register')" class="hidden space-y-4">
+                            <div>
+                                <label for="gateRegisterName" class="mb-1.5 block text-sm font-medium text-slate-700">ชื่อ-นามสกุล</label>
+                                <input id="gateRegisterName" name="name" type="text" autocomplete="name" required placeholder="ชื่อของคุณ" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10">
+                            </div>
+                            <div>
+                                <label for="gateRegisterEmail" class="mb-1.5 block text-sm font-medium text-slate-700">อีเมล</label>
+                                <input id="gateRegisterEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10">
+                            </div>
+                            <div>
+                                <label for="gateRegisterPassword" class="mb-1.5 block text-sm font-medium text-slate-700">สร้างรหัสผ่าน</label>
+                                <input id="gateRegisterPassword" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="อย่างน้อย 8 ตัวอักษร" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10">
+                            </div>
+                            <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-600/20 transition hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-500/20">
+                                สมัครสมาชิกอาสาสมัคร <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </form>
+
+                        <p class="mt-6 text-center text-sm text-slate-500">
+                            <span id="authSwitchPrompt">ยังไม่มีบัญชี?</span>
+                            <button id="authSwitchButton" type="button" onclick="switchGateAuthMode()" class="ml-1 font-semibold text-brand-700 hover:text-brand-800">สมัครสมาชิก</button>
+                        </p>
+                        <p class="mt-6 rounded-xl bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800">
+                            <i class="fa-solid fa-circle-info mr-1"></i>
+                            โหมดตัวอย่าง: ระบบยังไม่ได้เชื่อมต่อบริการตรวจสอบบัญชี กรอกข้อมูลเพื่อทดลองเข้าสู่หน้าแอปได้
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="appShell" class="hidden w-full flex-grow flex-col">
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('catalog')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                        <i class="fa-solid fa-hand-holding-heart text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold text-slate-900 tracking-tight block leading-none">Volunteer<span class="text-brand-600">Hub</span></span>
+                        <span class="text-xs text-slate-500 font-normal">ระบบจิตอาสาเพื่อชุมชน</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs (Desktop) -->
+                <nav class="hidden md:flex space-x-1 lg:space-x-2">
+                    <button id="nav-catalog" onclick="switchTab('catalog')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-brand-700 bg-brand-50 border border-brand-200">
+                        <i class="fa-solid fa-compass mr-1.5"></i> คลังกิจกรรม
+                    </button>
+                    <button id="nav-tracker" onclick="switchTab('tracker')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all">
+                        <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> ประวัติ & ชั่วโมงสะสม
+                    </button>
+                    <button id="nav-profile" onclick="switchTab('profile')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all">
+                        <i class="fa-solid fa-user-gear mr-1.5"></i> โปรไฟล์อาสา
+                    </button>
+                </nav>
+
+                <!-- Auth & User Info -->
+                <div class="flex items-center gap-3">
+                    <button id="authBtn" onclick="logoutUser()" class="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 transition-all hover:bg-slate-200 sm:px-4">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="hidden sm:inline">ออกจากระบบ</span>
+                    </button>
+                    
+                    <div id="userPill" class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-full pl-2 pr-3 py-1 cursor-pointer hover:border-slate-300 transition-all" onclick="switchTab('profile')">
+                        <img id="headerAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-brand-500">
+                        <div class="text-left hidden sm:block">
+                            <p id="headerName" class="text-xs font-semibold text-slate-800 leading-tight">กัญญารัตน์ สุขใจ</p>
+                            <span id="headerHours" class="text-[10px] text-brand-600 font-medium"><i class="fa-solid fa-award"></i> 42 ชั่วโมง</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Row -->
+        <div class="md:hidden border-t border-slate-100 px-2 py-2 flex justify-around bg-white">
+            <button id="mobile-nav-catalog" onclick="switchTab('catalog')" class="flex-1 py-1.5 text-center text-xs font-medium text-brand-600 bg-brand-50 rounded-md">
+                <i class="fa-solid fa-compass block text-base mb-0.5"></i> กิจกรรม
+            </button>
+            <button id="mobile-nav-tracker" onclick="switchTab('tracker')" class="flex-1 py-1.5 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 rounded-md">
+                <i class="fa-solid fa-clock-rotate-left block text-base mb-0.5"></i> ประวัติ
+            </button>
+            <button id="mobile-nav-profile" onclick="switchTab('profile')" class="flex-1 py-1.5 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 rounded-md">
+                <i class="fa-solid fa-user block text-base mb-0.5"></i> โปรไฟล์
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- ==================== TAB 1: ACTIVITY CATALOG ==================== -->
+        <section id="tab-catalog" class="tab-content active space-y-6">
+            
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-md relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none">
+                    <i class="fa-solid fa-hands-holding-child text-[240px]"></i>
+                </div>
+                <div class="max-w-2xl relative z-10">
+                    <span class="inline-block bg-brand-500/20 text-brand-300 border border-brand-500/30 text-xs px-3 py-1 rounded-full font-medium mb-3">
+                        🌱 รวมพลังจิตอาสาเพื่อสังคม
+                    </span>
+                    <h1 class="text-2xl sm:text-4xl font-bold tracking-tight mb-2">ค้นหากิจกรรมอาสาที่ใช่สำหรับคุณ</h1>
+                    <p class="text-slate-300 text-sm sm:text-base font-light leading-relaxed">
+                        เปิดรับสมัครจิตอาสาร่วมสร้างการเปลี่ยนแปลง พัฒนาชุมชน สิ่งแวดล้อม และการศึกษา พร้อมสะสมชั่วโมงจิตอาสาอย่างเป็นระบบ
+                    </p>
+                </div>
+            </div>
+
+            <!-- Search & Filters Toolbar -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row gap-3 justify-between items-center">
+                    
+                    <!-- Search Box -->
+                    <div class="relative w-full md:w-96">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" id="searchInput" oninput="filterActivities()" placeholder="ค้นหากิจกรรม, สถานที่ หรือหน่วยงาน..." class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all bg-slate-50">
+                    </div>
+
+                    <!-- Category Pills -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
+                        <button onclick="setCategoryFilter('all')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all bg-brand-600 text-white" data-cat="all">
+                            ทั้งหมด
+                        </button>
+                        <button onclick="setCategoryFilter('env')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" data-cat="env">
+                            🌿 สิ่งแวดล้อม
+                        </button>
+                        <button onclick="setCategoryFilter('edu')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" data-cat="edu">
+                            📚 การศึกษา
+                        </button>
+                        <button onclick="setCategoryFilter('community')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" data-cat="community">
+                            🤝 ชุมชน & บำเพ็ญประโยชน์
+                        </button>
+                        <button onclick="setCategoryFilter('animal')" class="cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" data-cat="animal">
+                            🐶 สัตว์เลี้ยง & อนุรักษ์
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Grid -->
+            <div id="activityGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Content Rendered Here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyCatalog" class="hidden text-center py-16 bg-white rounded-xl border border-slate-200">
+                <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3"></i>
+                <p class="text-slate-600 font-medium">ไม่พบกิจกรรมที่ค้นหา</p>
+                <p class="text-xs text-slate-400 mt-1">ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่อื่นๆ</p>
+            </div>
+
+        </section>
+
+        <!-- ==================== TAB 2: HOUR TRACKER & HISTORY ==================== -->
+        <section id="tab-tracker" class="tab-content space-y-6">
+            
+            <!-- Section Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">ประวัติและการสะสมชั่วโมงจิตอาสา</h2>
+                    <p class="text-xs text-slate-500">ติดตามสถานะการเข้าร่วมและดาวน์โหลดใบรับรองอิเล็กทรอนิกส์</p>
+                </div>
+                <button onclick="generateSummaryCert()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-medium flex items-center gap-2 transition-all shadow-sm">
+                    <i class="fa-solid fa-file-pdf text-brand-400"></i> พิมพ์เอกสารสรุปชั่วโมง
+                </button>
+            </div>
+
+            <!-- Stats Overview Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium mb-1">ชั่วโมงรวมที่อนุมัติแล้ว</p>
+                        <h3 id="statApprovedHours" class="text-2xl font-bold text-slate-900">42 <span class="text-xs font-normal text-slate-500">ชม.</span></h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium mb-1">กิจกรรมที่เข้าร่วมทั้งหมด</p>
+                        <h3 id="statTotalJoined" class="text-2xl font-bold text-slate-900">6 <span class="text-xs font-normal text-slate-500">โครงการ</span></h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium mb-1">รอการตรวจสอบชั่วโมง</p>
+                        <h3 id="statPendingHours" class="text-2xl font-bold text-slate-900">6 <span class="text-xs font-normal text-slate-500">ชม.</span></h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium mb-1">ระดับเหรียญเกียรติยศ</p>
+                        <h3 class="text-base font-bold text-slate-900 flex items-center gap-1.5">
+                            <span class="inline-block w-3 h-3 rounded-full bg-amber-400"></span> เหรียญเงิน (Silver)
+                        </h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-medal"></i>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- History Table Card -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h3 class="font-semibold text-slate-800 text-sm">รายละเอียดกิจกรรมที่เคยสมัคร</h3>
+                    <span class="text-xs text-slate-500">ปรับปรุงล่าสุด วันนี้</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                                <th class="p-4">ชื่อกิจกรรม / หน่วยงาน</th>
+                                <th class="p-4">วันที่ทำกิจกรรม</th>
+                                <th class="p-4">ชั่วโมง</th>
+                                <th class="p-4">สถานะ</th>
+                                <th class="p-4 text-right">หลักฐาน / เอกสาร</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-100 text-xs text-slate-700">
+                            <!-- Dynamic Rows Rendered Here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== TAB 3: VOLUNTEER PROFILE ==================== -->
+        <section id="tab-profile" class="tab-content space-y-6">
+            
+            <!-- Profile Card Header -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                    
+                    <div class="relative">
+                        <img id="profileAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" alt="Profile Avatar" class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow">
+                        <span class="absolute bottom-0 right-0 bg-brand-500 text-white w-7 h-7 rounded-full flex items-center justify-center border-2 border-white text-xs" title="Verified Volunteer">
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                    </div>
+
+                    <div class="flex-grow text-center sm:text-left space-y-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <h2 id="profileName" class="text-2xl font-bold text-slate-900">กัญญารัตน์ สุขใจ</h2>
+                                <p id="profileRole" class="text-xs text-slate-500">อาสาสมัครพัฒนาชุมชน & การศึกษา</p>
+                            </div>
+                            <button onclick="openEditProfileModal()" class="px-4 py-2 border border-slate-300 hover:bg-slate-50 rounded-lg text-xs font-medium text-slate-700 transition-all self-center sm:self-auto">
+                                <i class="fa-solid fa-pen-to-square mr-1"></i> แก้ไขข้อมูลส่วนตัว
+                            </button>
+                        </div>
+
+                        <div class="flex flex-wrap justify-center sm:justify-start gap-2 pt-1">
+                            <span class="px-2.5 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-700 text-xs font-medium">
+                                🌟 อาสาสมัครระดับเงิน (Silver Tier)
+                            </span>
+                            <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs">
+                                📍 กรุงเทพมหานคร
+                            </span>
+                            <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs">
+                                🆔 VOL-2026-8842
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 text-xs text-slate-600 border-t border-slate-100">
+                            <div><i class="fa-regular fa-envelope text-slate-400 w-5"></i> <span id="profileEmail">kanyarat.s@example.com</span></div>
+                            <div><i class="fa-solid fa-phone text-slate-400 w-5"></i> <span id="profilePhone">089-123-4567</span></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Skills & Badges Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Skill Set -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-lightbulb text-brand-600"></i> ทักษะและความถนัด
+                        </h3>
+                    </div>
+                    <div class="flex flex-wrap gap-2" id="skillsContainer">
+                        <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-lg font-medium">สอนหนังสือเด็ก</span>
+                        <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-lg font-medium">การปฐมพยาบาลเบื้องต้น</span>
+                        <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-lg font-medium">ปลูกป่า & ฟื้นฟูธรรมชาติ</span>
+                        <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-lg font-medium">ถ่ายภาพ / สื่อกิจกรรม</span>
+                        <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-lg font-medium">ดูแลผู้สูงอายุ</span>
+                    </div>
+                </div>
+
+                <!-- Badges & Achievements -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-award text-amber-500"></i> ตราสัญลักษณ์ความสำเร็จ
+                    </h3>
+                    <div class="grid grid-cols-3 gap-3 text-center">
+                        <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                            <div class="w-10 h-10 mx-auto mb-1.5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-tree"></i>
+                            </div>
+                            <p class="text-[11px] font-medium text-slate-800">นักรบสีเขียว</p>
+                            <p class="text-[9px] text-slate-400">ปลูกต้นไม้ > 50 ต้น</p>
+                        </div>
+                        <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                            <div class="w-10 h-10 mx-auto mb-1.5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-book-open"></i>
+                            </div>
+                            <p class="text-[11px] font-medium text-slate-800">ครูอาสาจิตใจดี</p>
+                            <p class="text-[9px] text-slate-400">สอนครบ 20 ชั่วโมง</p>
+                        </div>
+                        <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                            <div class="w-10 h-10 mx-auto mb-1.5 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-fire"></i>
+                            </div>
+                            <p class="text-[11px] font-medium text-slate-800">แอคทีฟจิตอาสา</p>
+                            <p class="text-[9px] text-slate-400">ร่วมกิจกรรมติดต่อกัน</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 space-y-2">
+            <div class="flex justify-center items-center gap-2 font-medium text-slate-700">
+                <i class="fa-solid fa-hand-holding-heart text-brand-600"></i> Volunteer Hub Thailand
+            </div>
+            <p>ระบบบริหารจัดการและสะสมชั่วโมงกิจกรรมอาสาสมัครเพื่อพัฒนาสังคมไทย</p>
+            <p class="text-slate-400">© 2026 Volunteer Hub. สงวนลิขสิทธิ์ทั้งหมด</p>
+        </div>
+    </footer>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Activity Detail Modal -->
+    <div id="activityModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-100 transform transition-all max-h-[90vh] flex flex-col">
+            
+            <div class="relative h-48 bg-slate-200">
+                <img id="modalImg" src="" alt="Cover" class="w-full h-full object-cover">
+                <button onclick="closeModal('activityModal')" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/50 hover:bg-slate-900 text-white flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <span id="modalBadge" class="absolute bottom-3 left-3 bg-brand-600 text-white text-xs px-3 py-1 rounded-full font-medium shadow"></span>
+            </div>
+
+            <div class="p-6 space-y-4 overflow-y-auto flex-grow">
+                <div>
+                    <h3 id="modalTitle" class="text-xl font-bold text-slate-900 mb-1"></h3>
+                    <p id="modalOrg" class="text-xs text-brand-700 font-medium"></p>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs">
+                    <div>
+                        <span class="text-slate-400 block mb-0.5">วันที่จัดงาน</span>
+                        <strong id="modalDate" class="text-slate-700"></strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block mb-0.5">ชั่วโมงจิตอาสา</span>
+                        <strong id="modalHours" class="text-brand-600"></strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block mb-0.5">จำนวนรับสมัคร</span>
+                        <strong id="modalSeats" class="text-slate-700"></strong>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">รายละเอียดกิจกรรม</h4>
+                    <p id="modalDesc" class="text-xs text-slate-600 leading-relaxed font-light"></p>
+                </div>
+
+                <div class="space-y-2">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">สถานที่ปฏิบัติงาน</h4>
+                    <p id="modalLocation" class="text-xs text-slate-600 flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-dot text-rose-500"></i> <span></span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-100 bg-slate-50/80 flex justify-between items-center">
+                <span class="text-xs text-slate-500">ฟรี ไม่เสียค่าใช้จ่าย</span>
+                <button id="modalRegBtn" onclick="registerCurrentActivity()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl text-xs transition-all shadow-md shadow-brand-600/20">
+                    <i class="fa-solid fa-check-circle mr-1.5"></i> ลงชื่อเข้าร่วมกิจกรรม
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900">แก้ไขข้อมูลส่วนตัว</h3>
+                <button onclick="closeModal('editProfileModal')" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="editProfileForm" onsubmit="saveProfile(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-600 mb-1 font-medium">ชื่อ-นามสกุล</label>
+                    <input type="text" id="editNameInput" required class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1 font-medium">อีเมล</label>
+                    <input type="email" id="editEmailInput" required class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1 font-medium">เบอร์โทรศัพท์</label>
+                    <input type="text" id="editPhoneInput" required class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-600 mb-1 font-medium">สายอาชีพ / สถานะ</label>
+                    <input type="text" id="editRoleInput" required class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('editProfileModal')" class="px-4 py-2 border border-slate-200 rounded-lg text-slate-600">ยกเลิก</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Certificate Preview Modal -->
+    <div id="certModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-8 shadow-2xl border-4 border-amber-300 relative text-center space-y-4">
+            <button onclick="closeModal('certModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            
+            <div class="border-2 border-slate-200 p-6 rounded-xl space-y-4 bg-amber-50/30">
+                <i class="fa-solid fa-award text-5xl text-amber-500"></i>
+                <h2 class="text-2xl font-bold text-slate-900 font-serif tracking-wider">ใบประกาศเกียรติคุณจิตอาสา</h2>
+                <p class="text-xs text-slate-500">มอบให้เพื่อแสดงว่า</p>
+                <p id="certName" class="text-xl font-bold text-brand-700 underline decoration-amber-400 decoration-2">กัญญารัตน์ สุขใจ</p>
+                <p id="certDesc" class="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
+                    ได้ปฏิบัติงานอาสาสมัครเพื่อประโยชน์แก่สังคมและชุมชน ด้วยความอุทิศตนและเสียสละ
+                </p>
+                <div class="pt-4 flex justify-between items-end border-t border-slate-200 text-[10px] text-slate-500">
+                    <div>
+                        <p class="font-bold text-slate-700">Volunteer Hub Thailand</p>
+                        <p>องค์กรส่งเสริมจิตอาสาแห่งชาติ</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-slate-700" id="certDate">20 ตุลาคม 2026</p>
+                        <p>รหัสรับรอง: CERT-2026-9902</p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="showToast('กำลังดาวน์โหลดไฟล์เกียรติบัตร PDF...', 'success'); closeModal('certModal');" class="px-5 py-2 bg-slate-900 text-white text-xs font-medium rounded-lg hover:bg-slate-800 transition-all">
+                <i class="fa-solid fa-download mr-1.5"></i> ดาวน์โหลด PDF
+            </button>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Data Store
+        const appState = {
+            currentUser: {
+                name: "กัญญารัตน์ สุขใจ",
+                email: "kanyarat.s@example.com",
+                phone: "089-123-4567",
+                role: "อาสาสมัครพัฒนาชุมชน & การศึกษา",
+                approvedHours: 42,
+                pendingHours: 6,
+                avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
+            },
+            activeFilterCat: 'all',
+            searchQuery: '',
+            selectedActivityId: null,
+            activities: [
+                {
+                    id: 1,
+                    title: "ปลูกป่าชายเลน อนุรักษ์ระบบนิเวศอ่าวไทย",
+                    category: "env",
+                    categoryName: "🌿 สิ่งแวดล้อม",
+                    org: "มูลนิธิเพื่อการอนุรักษ์ธรรมชาติ",
+                    date: "28 ต.ค. 2026 (08:00 - 15:00)",
+                    hours: 6,
+                    seatsLeft: 12,
+                    totalSeats: 40,
+                    location: "ศูนย์ศึกษาธรรมชาติป่าชายเลน สมุทรปราการ",
+                    img: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=600",
+                    desc: "ร่วมใจปลูกกล้าไม้แสมและแสมทะเล 1,000 ต้น เพื่อฟื้นฟูแนวชายฝั่งทะเล ป้องกันการกัดเซาะ และสร้างแหล่งอนุบาลสัตว์น้ำธรรมชาติ มีรถบัสรับส่งจาก BTS บางนา"
+                },
+                {
+                    id: 2,
+                    title: "ครูอาสาอ่านหนังสือให้น้องบนดอยสูง",
+                    category: "edu",
+                    categoryName: "📚 การศึกษา",
+                    org: "กลุ่มอาสาปัญญาดี",
+                    date: "05 พ.ย. 2026 (09:00 - 16:00)",
+                    hours: 8,
+                    seatsLeft: 5,
+                    totalSeats: 20,
+                    location: "โรงเรียนบ้านห้วยหญ้าไซ จ.เชียงราย",
+                    img: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=600",
+                    desc: "จัดกิจกรรมนันทนาการ เล่านิทานสร้างสรรค์ และมอบอุปกรณ์การเรียนแก่เด็กนักเรียนในพื้นที่ห่างไกล พร้อมปรับปรุงห้องหนังสือประจำโรงเรียน"
+                },
+                {
+                    id: 3,
+                    title: "ทำดีเพื่อเพื่อนสี่ขา Care & Clean บ้านสุนัขจรจัด",
+                    category: "animal",
+                    categoryName: "🐶 สัตว์เลี้ยง & อนุรักษ์",
+                    org: "มูลนิธิเคียงข้างเพื่อนสี่ขา",
+                    date: "12 พ.ย. 2026 (09:00 - 14:00)",
+                    hours: 5,
+                    seatsLeft: 18,
+                    totalSeats: 30,
+                    location: "ศูนย์พักพิงสัตว์จรจัด นครปฐม",
+                    img: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&q=80&w=600",
+                    desc: "ร่วมอาบน้ำทำความสะอาดสุนัขกว่า 200 ตัว ปรับปรุงกรงพักพิง คัดแยกอาหารบริจาค และร่วมเดินเล่นผ่อนคลายความเครียดให้สุนัขจรจัด"
+                },
+                {
+                    id: 4,
+                    title: "ฟื้นฟูทาสีลานกิจกรรมชุมชนคลองเตย",
+                    category: "community",
+                    categoryName: "🤝 ชุมชน & บำเพ็ญประโยชน์",
+                    org: "เครือข่ายพัฒนาเมืองน่าอยู่",
+                    date: "18 พ.ย. 2026 (08:30 - 16:00)",
+                    hours: 7,
+                    seatsLeft: 8,
+                    totalSeats: 25,
+                    location: "ชุมชนพัฒนาคลองเตย กรุงเทพฯ",
+                    img: "https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?auto=format&fit=crop&q=80&w=600",
+                    desc: "ปรับปรุงภูมิทัศน์ วาดภาพสตรีทอาร์ทเสริมการเรียนรู้ และทาสีสนามเด็กเล่นเพื่อเพิ่มพื้นที่ปลอดภัยและน่าอยู่ให้แก่เด็กๆ ในชุมชน"
+                },
+                {
+                    id: 5,
+                    title: "จิตอาสาแพ็คถุงยังชีพช่วยเหลือผู้ประสบภัย",
+                    category: "community",
+                    categoryName: "🤝 ชุมชน & บำเพ็ญประโยชน์",
+                    org: "สมาคมกู้ภัยบรรเทาสาธารณภัย",
+                    date: "22 พ.ย. 2026 (10:00 - 15:00)",
+                    hours: 4,
+                    seatsLeft: 22,
+                    totalSeats: 50,
+                    location: "คลังสินค้าบรรเทาทุกข์ ดอนเมือง",
+                    img: "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=600",
+                    desc: "ช่วยลำเลียง คัดแยกสิ่งของบริจาค และบรรจุถุงยังชีพเพื่อเตรียมจัดส่งไปยังพื้นที่ประสบภัยน้ำท่วมกะทันหัน"
+                }
+            ],
+            history: [
+                {
+                    id: 101,
+                    title: "ปลูกป่าชายเลน อนุรักษ์ระบบนิเวศอ่าวไทย",
+                    date: "15 ต.ค. 2026",
+                    hours: 6,
+                    status: "approved",
+                    statusText: "อนุมัติแล้ว",
+                    org: "มูลนิธิเพื่อการอนุรักษ์ธรรมชาติ"
+                },
+                {
+                    id: 102,
+                    title: "สอนหนังสือเด็กปฐมวัยในชุมชนแออัด",
+                    date: "02 ต.ค. 2026",
+                    hours: 8,
+                    status: "approved",
+                    statusText: "อนุมัติแล้ว",
+                    org: "มูลนิธิเด็กไทยเติบโต"
+                },
+                {
+                    id: 103,
+                    title: "เก็บขยะชายหาดและแยกขยะพลาสติก",
+                    date: "18 ก.ย. 2026",
+                    hours: 5,
+                    status: "approved",
+                    statusText: "อนุมัติแล้ว",
+                    org: "กลุ่มบันทึกทะเลไทย"
+                },
+                {
+                    id: 104,
+                    title: "เลี้ยงอาหารและอ่านหนังสือผู้สูงอายุ",
+                    date: "04 ก.ย. 2026",
+                    hours: 6,
+                    status: "pending",
+                    statusText: "รอตรวจสอบ",
+                    org: "สถานสงเคราะห์บ้านบางแค"
+                }
+            ]
+        };
+
+        // Initialize App
+        window.onload = function() {
+            renderActivities();
+            renderHistory();
+            updateProfileUI();
+        };
+
+        // Navigation Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+
+            // Desktop Nav Highlight
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all";
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.className = "nav-btn px-4 py-2 rounded-lg text-sm font-medium text-brand-700 bg-brand-50 border border-brand-200 transition-all";
+            }
+
+            // Mobile Nav Highlight
+            document.querySelectorAll('[id^="mobile-nav-"]').forEach(mBtn => {
+                mBtn.className = "flex-1 py-1.5 text-center text-xs font-medium text-slate-600 hover:bg-slate-50 rounded-md";
+            });
+            const activeMobileNav = document.getElementById(`mobile-nav-${tabId}`);
+            if(activeMobileNav) {
+                activeMobileNav.className = "flex-1 py-1.5 text-center text-xs font-medium text-brand-600 bg-brand-50 rounded-md";
+            }
+        }
+
+        // Render Activity Grid
+        function renderActivities() {
+            const grid = document.getElementById('activityGrid');
+            const empty = document.getElementById('emptyCatalog');
+            grid.innerHTML = '';
+
+            const filtered = appState.activities.filter(act => {
+                const matchesCat = appState.activeFilterCat === 'all' || act.category === appState.activeFilterCat;
+                const matchesSearch = act.title.toLowerCase().includes(appState.searchQuery.toLowerCase()) ||
+                                      act.org.toLowerCase().includes(appState.searchQuery.toLowerCase()) ||
+                                      act.location.toLowerCase().includes(appState.searchQuery.toLowerCase());
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            } else {
+                empty.classList.add('hidden');
+            }
+
+            filtered.forEach(act => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col cursor-pointer hover:shadow-md transition-shadow";
+                card.innerHTML = `
+                    <img src="${escapeHtml(act.img)}" alt="${escapeHtml(act.title)}" class="w-full h-44 object-cover">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <span class="text-xs font-medium text-brand-700 mb-2">${escapeHtml(act.categoryName)}</span>
+                        <h3 class="font-bold text-slate-900 mb-2">${escapeHtml(act.title)}</h3>
+                        <p class="text-xs text-slate-500 mb-4">${escapeHtml(act.org)}</p>
+                        <div class="mt-auto flex items-center justify-between text-xs text-slate-600">
+                            <span><i class="fa-regular fa-calendar mr-1"></i>${escapeHtml(act.date)}</span>
+                            <span class="font-medium text-brand-700">${act.hours} ชม.</span>
+                        </div>
+                        <button type="button" class="mt-4 w-full py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-medium transition-colors">ดูรายละเอียดกิจกรรม</button>
+                    </div>`;
+                card.addEventListener('click', () => openActivityModal(act.id));
+                grid.appendChild(card);
+            });
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[character]);
+        }
+
+        function filterActivities() {
+            appState.searchQuery = document.getElementById('searchInput').value.trim();
+            renderActivities();
+        }
+
+        function setCategoryFilter(category) {
+            appState.activeFilterCat = category;
+            document.querySelectorAll('.cat-filter-btn').forEach(button => {
+                const selected = button.dataset.cat === category;
+                button.className = `cat-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${selected ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`;
+            });
+            renderActivities();
+        }
+
+        function renderHistory() {
+            const body = document.getElementById('historyTableBody');
+            body.innerHTML = '';
+            appState.history.forEach(item => {
+                const row = document.createElement('tr');
+                const statusClass = item.status === 'approved'
+                    ? 'bg-brand-50 text-brand-700'
+                    : 'bg-amber-50 text-amber-700';
+                row.innerHTML = `
+                    <td class="p-4"><div class="font-medium text-slate-800">${escapeHtml(item.title)}</div><div class="text-[10px] text-slate-400 mt-1">${escapeHtml(item.org)}</div></td>
+                    <td class="p-4 whitespace-nowrap">${escapeHtml(item.date)}</td>
+                    <td class="p-4">${item.hours} ชม.</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded-full ${statusClass}">${escapeHtml(item.statusText)}</span></td>
+                    <td class="p-4 text-right"><button type="button" class="text-brand-700 hover:text-brand-800 font-medium" aria-label="ดูใบรับรอง"><i class="fa-solid fa-file-arrow-down"></i></button></td>`;
+                row.querySelector('button').addEventListener('click', generateSummaryCert);
+                body.appendChild(row);
+            });
+        }
+
+        function updateProfileUI() {
+            const user = appState.currentUser;
+            document.getElementById('headerName').textContent = user.name;
+            document.getElementById('profileName').textContent = user.name;
+            document.getElementById('profileRole').textContent = user.role;
+            document.getElementById('profileEmail').textContent = user.email;
+            document.getElementById('profilePhone').textContent = user.phone;
+            document.getElementById('headerHours').innerHTML = `<i class="fa-solid fa-award"></i> ${user.approvedHours} ชั่วโมง`;
+            document.getElementById('statApprovedHours').innerHTML = `${user.approvedHours} <span class="text-xs font-normal text-slate-500">ชม.</span>`;
+            document.getElementById('statPendingHours').innerHTML = `${user.pendingHours} <span class="text-xs font-normal text-slate-500">ชม.</span>`;
+            document.getElementById('headerAvatar').src = user.avatar;
+            document.getElementById('profileAvatar').src = user.avatar;
+        }
+
+        function openActivityModal(activityId) {
+            const activity = appState.activities.find(item => item.id === activityId);
+            if (!activity) return;
+            appState.selectedActivityId = activityId;
+            document.getElementById('modalImg').src = activity.img;
+            document.getElementById('modalBadge').textContent = activity.categoryName;
+            document.getElementById('modalTitle').textContent = activity.title;
+            document.getElementById('modalOrg').textContent = activity.org;
+            document.getElementById('modalDate').textContent = activity.date;
+            document.getElementById('modalHours').textContent = `${activity.hours} ชั่วโมง`;
+            document.getElementById('modalSeats').textContent = `${activity.seatsLeft} / ${activity.totalSeats} ที่`;
+            document.getElementById('modalDesc').textContent = activity.desc;
+            document.querySelector('#modalLocation span').textContent = activity.location;
+            openModal('activityModal');
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            if (!document.querySelector('.fixed.inset-0.z-50:not(.hidden)')) {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        function registerCurrentActivity() {
+            const activity = appState.activities.find(item => item.id === appState.selectedActivityId);
+            if (!activity) return;
+            if (activity.seatsLeft <= 0) {
+                showToast('กิจกรรมนี้เต็มแล้ว', 'error');
+                return;
+            }
+            activity.seatsLeft -= 1;
+            appState.history.unshift({
+                id: Date.now(), title: activity.title,
+                date: activity.date.split(' (')[0], hours: activity.hours,
+                status: 'pending', statusText: 'รอตรวจสอบ', org: activity.org
+            });
+            appState.currentUser.pendingHours += activity.hours;
+            document.getElementById('statTotalJoined').innerHTML = `${appState.history.length} <span class="text-xs font-normal text-slate-500">โครงการ</span>`;
+            renderHistory();
+            updateProfileUI();
+            closeModal('activityModal');
+            showToast('ลงชื่อเข้าร่วมกิจกรรมเรียบร้อยแล้ว', 'success');
+        }
+
+        function switchGateAuthMode() {
+            const showRegister = document.getElementById('gateLoginForm').classList.contains('hidden');
+            document.getElementById('gateLoginForm').classList.toggle('hidden', !showRegister);
+            document.getElementById('gateRegisterForm').classList.toggle('hidden', showRegister);
+            document.getElementById('authEyebrow').textContent = showRegister ? 'เข้าร่วมชุมชนอาสา' : 'ยินดีต้อนรับกลับ';
+            document.getElementById('authTitle').textContent = showRegister ? 'สร้างบัญชีใหม่' : 'เข้าสู่ระบบ';
+            document.getElementById('authSubtitle').textContent = showRegister
+                ? 'สมัครสมาชิกเพื่อเริ่มต้นทำกิจกรรมดี ๆ ไปด้วยกัน'
+                : 'เข้าสู่ระบบเพื่อค้นหาและเข้าร่วมกิจกรรมอาสา';
+            document.getElementById('authSwitchPrompt').textContent = showRegister ? 'มีบัญชีอยู่แล้ว?' : 'ยังไม่มีบัญชี?';
+            document.getElementById('authSwitchButton').textContent = showRegister ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
+        }
+
+        function handleGateAuth(event, mode) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const formData = new FormData(form);
+            const email = formData.get('email').trim();
+            const name = mode === 'register'
+                ? formData.get('name').trim()
+                : sessionStorage.getItem('volunteerHubName') || appState.currentUser.name;
+
+            appState.currentUser.name = name;
+            appState.currentUser.email = email;
+            sessionStorage.setItem('volunteerHubName', name);
+            sessionStorage.setItem('volunteerHubEmail', email);
+            updateProfileUI();
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('appShell').classList.remove('hidden');
+            document.getElementById('appShell').classList.add('flex');
+            showToast(mode === 'login' ? 'เข้าสู่ระบบเรียบร้อยแล้ว' : 'สมัครสมาชิกเรียบร้อยแล้ว', 'success');
+        }
+
+        function logoutUser() {
+            sessionStorage.removeItem('volunteerHubName');
+            sessionStorage.removeItem('volunteerHubEmail');
+            document.getElementById('appShell').classList.add('hidden');
+            document.getElementById('appShell').classList.remove('flex');
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('gateLoginForm').reset();
+            document.getElementById('gateRegisterForm').reset();
+            switchGateAuthMode();
+        }
+
+        function openEditProfileModal() {
+            const user = appState.currentUser;
+            document.getElementById('editNameInput').value = user.name;
+            document.getElementById('editEmailInput').value = user.email;
+            document.getElementById('editPhoneInput').value = user.phone;
+            document.getElementById('editRoleInput').value = user.role;
+            openModal('editProfileModal');
+        }
+
+        function saveProfile(event) {
+            event.preventDefault();
+            const user = appState.currentUser;
+            user.name = document.getElementById('editNameInput').value.trim();
+            user.email = document.getElementById('editEmailInput').value.trim();
+            user.phone = document.getElementById('editPhoneInput').value.trim();
+            user.role = document.getElementById('editRoleInput').value.trim();
+            sessionStorage.setItem('volunteerHubName', user.name);
+            sessionStorage.setItem('volunteerHubEmail', user.email);
+            updateProfileUI();
+            closeModal('editProfileModal');
+            showToast('บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว', 'success');
+        }
+
+        function generateSummaryCert() {
+            document.getElementById('certName').textContent = appState.currentUser.name;
+            document.getElementById('certDesc').textContent = `ได้ปฏิบัติงานอาสาสมัครเพื่อประโยชน์แก่สังคมและชุมชน รวม ${appState.currentUser.approvedHours} ชั่วโมง ด้วยความอุทิศตนและเสียสละ`;
+            openModal('certModal');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            const color = type === 'error' ? 'bg-rose-600' : 'bg-slate-900';
+            toast.className = `${color} text-white px-4 py-3 rounded-lg shadow-lg text-sm pointer-events-auto`;
+            toast.textContent = message;
+            document.getElementById('toastContainer').appendChild(toast);
+            window.setTimeout(() => toast.remove(), 3000);
+        }
+
+        window.addEventListener('load', () => {
+            renderActivities();
+            renderHistory();
+            const email = sessionStorage.getItem('volunteerHubEmail');
+            const name = sessionStorage.getItem('volunteerHubName');
+            if (email) {
+                appState.currentUser.email = email;
+                if (name) appState.currentUser.name = name;
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('appShell').classList.remove('hidden');
+                document.getElementById('appShell').classList.add('flex');
+            }
+            updateProfileUI();
+        });
+    </script>
+</body>
+</html>

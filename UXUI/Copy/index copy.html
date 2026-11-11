@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volunteer Hub - ระบบอาสาสมัครกิจกรรมเพื่อชุมชน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="Style.css">
+</head>
+<body>
+<div id="toasts" aria-live="polite" role="status"></div>
+
+<section id="auth" class="auth">
+  <div class="auth-shell">
+  <aside class="auth-side">
+    <div class="fx" aria-hidden="true">
+      <i class="blob b1"></i><i class="blob b2"></i>
+      <span class="leaf" style="left:12%;animation-delay:0s">🌱</span>
+      <span class="leaf" style="left:30%;animation-delay:2.5s">🍃</span>
+      <span class="leaf" style="left:48%;animation-delay:5s">💚</span>
+      <span class="leaf" style="left:66%;animation-delay:1.2s">🌿</span>
+      <span class="leaf" style="left:84%;animation-delay:6.5s">🌱</span>
+      <div class="ring"><span>🤝</span></div>
+    </div>
+    <div class="brand rise-in"><span class="logo" aria-hidden="true">🤝</span><div><b>Volunteer<span>Hub</span></b><small>ระบบจิตอาสาเพื่อชุมชน</small></div></div>
+    <div class="auth-copy">
+      <span class="tag rise-in" style="--d:.2s">🌱 ทุกการลงมือทำมีความหมาย</span>
+      <h2 class="rise-in" style="--d:.4s">เริ่มต้นทำสิ่งดีๆ ให้ชุมชนไปด้วยกัน</h2>
+      <p class="rise-in" style="--d:.6s">ค้นหากิจกรรมอาสาที่ใช่ บันทึกชั่วโมง และติดตามทุกความตั้งใจของคุณได้ในที่เดียว</p>
+    </div>
+    <small class="rise-in" style="--d:.8s">Volunteer Hub Thailand · พลังเล็กๆ ที่เปลี่ยนสังคมได้</small>
+  </aside>
+  <div class="auth-card">
+    <div class="brand"><span class="logo" aria-hidden="true">🤝</span><div><b>Volunteer<span>Hub</span></b><small>ระบบจิตอาสาเพื่อชุมชน</small></div></div>
+    <h1 id="authTitle">เข้าสู่ระบบ</h1>
+    <p id="authSub" class="muted">เข้าสู่ระบบเพื่อค้นหาและสมัครกิจกรรมอาสา</p>
+
+    <form id="loginForm" class="stack" novalidate>
+      <label>อีเมล<input name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+      <label>รหัสผ่าน<input name="password" type="password" autocomplete="current-password" required placeholder="กรอกรหัสผ่าน"></label>
+      <button class="btn primary lg" type="submit">เข้าสู่ระบบ</button>
+    </form>
+
+    <form id="registerForm" class="stack" hidden novalidate>
+      <label>ชื่อ-นามสกุล<input name="name" type="text" autocomplete="name" required></label>
+      <label>อีเมล<input name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+      <label>เบอร์โทรศัพท์<input name="phone" type="tel" autocomplete="tel" inputmode="tel" required placeholder="0812345678"></label>
+      <label>สร้างรหัสผ่าน<input name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="อย่างน้อย 8 ตัวอักษร"></label>
+      <label class="check"><input name="consent" type="checkbox" required> ฉันยินยอมให้เก็บและใช้ข้อมูลส่วนบุคคลเพื่อการสมัครกิจกรรมอาสา (PDPA)</label>
+      <button class="btn primary lg" type="submit">สมัครเป็นอาสาสมัคร</button>
+    </form>
+
+    <p class="center muted"><span id="authPrompt">ยังไม่มีบัญชี?</span> <button id="authSwitch" class="link" type="button">สมัครสมาชิก</button></p>
+    <p class="notice">โหมดตัวอย่าง: ข้อมูลบันทึกในเบราว์เซอร์นี้เท่านั้น และยังไม่ได้ตรวจสอบรหัสผ่านกับเซิร์ฟเวอร์</p>
+  </div>
+  </div>
+</section>
+
+<div id="app" hidden>
+  <header class="topbar">
+    <div class="wrap bar">
+      <div class="brand"><span class="logo" aria-hidden="true">🤝</span><div><b>Volunteer<span>Hub</span></b><small>ระบบจิตอาสาเพื่อชุมชน</small></div></div>
+      <nav class="tabs" aria-label="เมนูหลัก">
+        <button class="tab" data-tab="catalog" aria-current="page">🧭 กิจกรรม</button>
+        <button class="tab" data-tab="tracker">⏱️ ประวัติและชั่วโมง</button>
+        <button class="tab" data-tab="profile">👤 โปรไฟล์</button>
+      </nav>
+      <button id="logoutBtn" class="btn danger-outline" type="button">ออกจากระบบ</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="tab-catalog" class="panel">
+      <div class="hero">
+        <h1>ค้นหากิจกรรมอาสาที่ใช่สำหรับคุณ</h1>
+        <p>เลือกกิจกรรมที่ใกล้ใจ ลงชื่อเข้าร่วม และสะสมชั่วโมงจิตอาสาได้ในที่เดียว</p>
+      </div>
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="ค้นหากิจกรรม สถานที่ หรือหน่วยงาน" aria-label="ค้นหากิจกรรม">
+        <div id="cats" class="pills" role="group" aria-label="หมวดหมู่"></div>
+      </div>
+      <div id="grid" class="grid"></div>
+      <div id="emptyCatalog" class="empty" hidden><b>ไม่พบกิจกรรมที่ตรงกับการค้นหา</b><p>ลองเปลี่ยนคำค้นหาหรือเลือกหมวดหมู่อื่น</p></div>
+    </section>
+
+    <section id="tab-tracker" class="panel" hidden>
+      <div class="head">
+        <div><h2>ประวัติและชั่วโมงจิตอาสา</h2><p class="muted">นับเฉพาะชั่วโมงที่ได้รับอนุมัติแล้ว</p></div>
+        <button id="summaryBtn" class="btn primary" type="button">พิมพ์สรุปชั่วโมง</button>
+      </div>
+      <div id="stats" class="stats"></div>
+      <div class="card flush">
+        <div class="scroll">
+          <table>
+            <thead><tr><th>กิจกรรม</th><th>วันที่</th><th>ชั่วโมง</th><th>สถานะ</th><th>การดำเนินการ</th></tr></thead>
+            <tbody id="history"></tbody>
+          </table>
+        </div>
+        <div id="emptyHistory" class="empty" hidden><b>ยังไม่มีกิจกรรมอาสาที่คุณเข้าร่วม</b><p>เลือกค้นหากิจกรรมใหม่ๆ ได้เลย</p><button class="btn primary" data-tab="catalog" type="button">ดูกิจกรรมทั้งหมด</button></div>
+      </div>
+    </section>
+
+    <section id="tab-profile" class="panel" hidden>
+      <div class="card profile">
+        <div id="avatar" class="avatar" aria-hidden="true"></div>
+        <div class="grow">
+          <div class="head">
+            <div><h2 id="pName"></h2><p id="pRole" class="muted"></p></div>
+            <button id="editBtn" class="btn secondary" type="button">แก้ไขข้อมูลส่วนตัว</button>
+          </div>
+          <div class="chips"><span id="pTier" class="chip green"></span><span id="pId" class="chip"></span></div>
+          <p class="meta">✉️ <span id="pEmail"></span> &nbsp; 📞 <span id="pPhone"></span></p>
+        </div>
+      </div>
+      <div class="two">
+        <div class="card"><h3>ทักษะและความถนัด</h3><div id="pSkills" class="chips"></div></div>
+        <div class="card"><h3>ตราสัญลักษณ์ความสำเร็จ</h3><div id="pBadges" class="badges"></div></div>
+      </div>
+    </section>
+  </main>
+  <footer class="foot">© 2026 Volunteer Hub Thailand · ระบบบริหารจัดการชั่วโมงกิจกรรมอาสาสมัคร</footer>
+</div>
+
+<dialog id="actDialog" aria-labelledby="actTitle"></dialog>
+
+<dialog id="editDialog" aria-labelledby="editTitle">
+  <form id="editForm" class="stack">
+    <h3 id="editTitle">แก้ไขข้อมูลส่วนตัว</h3>
+    <label>ชื่อ-นามสกุล<input name="name" required></label>
+    <label>เบอร์โทรศัพท์<input name="phone" type="tel" inputmode="tel" required></label>
+    <label>บทบาทหรือสถานะ<input name="role" required></label>
+    <label>ทักษะ (คั่นด้วยเครื่องหมายจุลภาค)<input name="skills" placeholder="สอนหนังสือ, ปฐมพยาบาล"></label>
+    <div class="actions"><button class="btn secondary" type="button" data-close>ยกเลิก</button><button class="btn primary" type="submit">บันทึก</button></div>
+  </form>
+</dialog>
+
+<dialog id="certDialog" class="cert" aria-labelledby="certTitle">
+  <div class="cert-body">
+    <p class="muted">มอบให้เพื่อแสดงว่า</p>
+    <h2 id="certTitle"></h2>
+    <p id="certDesc"></p>
+    <p class="muted" id="certMeta"></p>
+  </div>
+  <div class="actions noprint"><button class="btn secondary" type="button" data-close>ปิด</button><button id="printBtn" class="btn primary" type="button">พิมพ์ / บันทึกเป็น PDF</button></div>
+</dialog>
+
+<script src="Web.js"></script>
+</body>
+</html>
